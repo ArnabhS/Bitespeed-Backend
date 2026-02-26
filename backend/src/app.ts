@@ -12,7 +12,7 @@ export function createApp() {
   app.use(
     cors({
       origin: env.FRONTEND_URL,
-      methods: ["GET", "POST"],
+      methods: ["GET", "POST","PUT","DELETE"],
       allowedHeaders: ["Content-Type"],
     })
   );
