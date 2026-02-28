@@ -21,7 +21,7 @@ export function createApp() {
   app.use(jsonOnly);
   app.use(rateLimiter);
 
-  app.use("/", router);
+  app.use("/api", router);
 
   app.use(errorHandler);
 
