@@ -22,9 +22,6 @@ export function errorHandler(
     return;
   }
 
-  if (env.NODE_ENV !== "production") {
-    console.error(err);
-  }
-
+  console.error(err);
   res.status(500).json({ error: "Internal server error." });
 }

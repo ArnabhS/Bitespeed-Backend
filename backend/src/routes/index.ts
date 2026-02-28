@@ -10,8 +10,8 @@ const router = Router();
 
 const identifySchema = z
   .object({
-    email: z.string().email().nullable().optional(),
-    phoneNumber: z.string().min(1).nullable().optional(),
+    email: z.string().trim().email().nullable().optional(),
+    phoneNumber: z.string().trim().min(1).nullable().optional(),
   })
   .refine((data) => data.email || data.phoneNumber, {
     message: "At least one of email or phoneNumber must be provided.",

@@ -12,20 +12,42 @@ export class ContactRepository implements IContactRepository {
     email: string | null,
     phoneNumber: string | null
   ): Promise<Contact[]> {
-    const filters: string[] = [];
-    if (email) filters.push(`email.eq.${email}`);
-    if (phoneNumber) filters.push(`phone_number.eq.${phoneNumber}`);
+    if (!email && !phoneNumber) return [];
 
-    if (filters.length === 0) return [];
+    const seenIds = new Set<number>();
+    const results: Contact[] = [];
 
-    const { data, error } = await this.db
-      .from(TABLE)
-      .select("*")
-      .or(filters.join(","))
-      .is("deleted_at", null);
+    if (email) {
+      const { data, error } = await this.db
+        .from(TABLE)
+        .select("*")
+        .eq("email", email)
+        .is("deleted_at", null);
 
-    if (error) throw new AppError(500, `DB error: ${error.message}`);
-    return data as Contact[];
+      if (error) throw new AppError(500, `DB error: ${error.message}`);
+      for (const row of data as Contact[]) {
+        seenIds.add(row.id);
+        results.push(row);
+      }
+    }
+
+    if (phoneNumber) {
+      const { data, error } = await this.db
+        .from(TABLE)
+        .select("*")
+        .eq("phone_number", phoneNumber)
+        .is("deleted_at", null);
+
+      if (error) throw new AppError(500, `DB error: ${error.message}`);
+      for (const row of data as Contact[]) {
+        if (!seenIds.has(row.id)) {
+          seenIds.add(row.id);
+          results.push(row);
+        }
+      }
+    }
+
+    return results;
   }
 
   async findById(id: number): Promise<Contact | null> {
@@ -58,6 +80,21 @@ export class ContactRepository implements IContactRepository {
       .insert(payload)
       .select()
       .single();
+
+    if (error) {
+      if (error.code === "23505") return this.findDuplicate(payload);
+      throw new AppError(500, `DB error: ${error.message}`);
+    }
+    return data as Contact;
+  }
+
+  private async findDuplicate(payload: CreateContactPayload): Promise<Contact> {
+    let query = this.db.from(TABLE).select("*").is("deleted_at", null);
+
+    if (payload.email) query = query.eq("email", payload.email);
+    if (payload.phone_number) query = query.eq("phone_number", payload.phone_number);
+
+    const { data, error } = await query.limit(1).single();
 
     if (error) throw new AppError(500, `DB error: ${error.message}`);
     return data as Contact;
