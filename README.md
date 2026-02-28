@@ -2,8 +2,8 @@
 
 A web service that links customer contacts across multiple purchases, even when different email addresses and phone numbers are used.
 
-**Live API:** `https://your-backend.onrender.com/api/identify`
-**Live UI:** `https://your-frontend.onrender.com`
+**Live API:** `https://bitespeed-backend-su8n.onrender.com/api/identify`
+**Live UI:** `https://bitespeed-backend-five.vercel.app/`
 
 ---
 
